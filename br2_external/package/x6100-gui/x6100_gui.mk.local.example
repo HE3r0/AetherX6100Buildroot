@@ -1,0 +1,20 @@
+################################################################################
+#
+#  X6100 GUI application — LOCAL development SITE override (example)
+#
+# Copy these three lines into x6100_gui.mk (replacing the git SITE block)
+# when building MAC6100 on this machine. Do not commit machine-specific
+# absolute paths if you want the public tree to stay clone-friendly.
+#
+# See also: C:\Projects\Mac6100\BUILDING.md
+#
+################################################################################
+
+# X6100_GUI_SITE = /home/macmuz/Projects/x6100_gui
+# X6100_GUI_SITE_METHOD = local
+# # X6100_GUI_GIT_SUBMODULES = YES
+
+# Upstream-style default (for reference):
+# X6100_GUI_SITE = https://github.com/gdyuldin/x6100_gui
+# X6100_GUI_SITE_METHOD = git
+# X6100_GUI_GIT_SUBMODULES = YES
