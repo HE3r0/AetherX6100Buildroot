@@ -1,0 +1,84 @@
+#!/bin/sh
+#
+# MAC6100: optional boot splash from DATA partition.
+# Prefer /mnt/Bootlogo/logo.png (or .jpg/.bmp); else built-in default.
+# Kernel CONFIG_LOGO remains the earliest splash; this runs before S95gui.
+#
+
+DEFAULT_LOGO=/usr/share/mac6100/bootlogo/logo.png
+OVERRIDE_DIR=/mnt/Bootlogo
+
+pick_logo() {
+	for name in logo.png logo.jpg logo.bmp splash.png splash.jpg; do
+		if [ -f "$OVERRIDE_DIR/$name" ]; then
+			echo "$OVERRIDE_DIR/$name"
+			return 0
+		fi
+	done
+	if [ -f "$DEFAULT_LOGO" ]; then
+		echo "$DEFAULT_LOGO"
+		return 0
+	fi
+	return 1
+}
+
+start() {
+	# Ensure DATA is mounted when p3 already exists (first boot uses S01).
+	if [ ! -d /mnt ] || ! mountpoint -q /mnt 2>/dev/null; then
+		mount /mnt 2>/dev/null || true
+	fi
+
+	if [ -d /mnt ] && mountpoint -q /mnt 2>/dev/null; then
+		mkdir -p "$OVERRIDE_DIR"
+		if [ ! -f "$OVERRIDE_DIR/README.txt" ]; then
+			cat > "$OVERRIDE_DIR/README.txt" <<'EOF'
+MAC6100 boot logo override
+==========================
+Place a full-screen image here named:
+
+  logo.png   (preferred)
+  logo.jpg
+  logo.bmp
+
+Recommended size: 800x480 (same orientation as the stock splash).
+
+If no logo.* file is present, the radio uses the built-in default
+shipped in the firmware image.
+
+This folder is on the DATA partition and survives system re-flashes
+of the rootfs (as long as DATA is kept).
+EOF
+		fi
+	fi
+
+	command -v fbv >/dev/null 2>&1 || return 0
+
+	img="$(pick_logo)" || return 0
+
+	# Hide blinking cursor on fbcon if present
+	echo 0 > /sys/class/graphics/fbcon/cursor_blink 2>/dev/null || true
+
+	# Background: leave pixels on FB until GUI takes over.
+	# stdin from /dev/null so fbv does not wait on a console key forever.
+	fbv -c "$img" < /dev/null > /dev/null 2>&1 &
+}
+
+stop() {
+	# Optional goodbye splash later; nothing required now.
+	:
+}
+
+case "$1" in
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	*)
+		echo "Usage: $0 {start|stop}"
+		exit 1
+		;;
+esac
+
+exit 0

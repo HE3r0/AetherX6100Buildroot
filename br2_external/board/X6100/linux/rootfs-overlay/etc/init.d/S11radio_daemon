@@ -4,10 +4,10 @@ case "$1" in
     start)
         # create DNS soft link
         ln -sf /run/NetworkManager/resolv.conf /etc/resolv.conf
-        # show power on wellcome screen
+        # Welcome splash: see S90mac6100_bootsplash (SD /mnt/Bootlogo override)
         ;;
     stop)
-        # show power off goodbye screen
+        # Power-off splash reserved (S90mac6100_bootsplash stop)
         ;;
     *)
         echo "Usage: $0 {start|stop}"
